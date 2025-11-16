@@ -312,7 +312,7 @@ npm test
 - OWASP Dependency Check integration
 - Support for Maven and Gradle projects
 
-## 🤝 Contributing
+<!-- ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -320,7 +320,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+5. Open a Pull Request -->
 
 ## 📝 Roadmap
 
@@ -344,9 +344,9 @@ The system uses industry-standard security practices:
 - Validation of all inputs
 - Safe package removal with confirmations
 
-## 📄 License
+<!-- ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the LICENSE file for details. -->
 
 ## 🙏 Acknowledgments
 
@@ -355,11 +355,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Security scanning via npm audit
 - Styled with Tailwind CSS
 
-## 📞 Support
+<!-- ## 📞 Support
 
 For issues, questions, or feature requests, please open an issue on GitHub.
 
 ---
 
-Made with ❤️ for developers who care about clean dependencies
+Made with ❤️ for developers who care about clean dependencies -->
 
