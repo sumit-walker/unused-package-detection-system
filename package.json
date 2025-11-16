@@ -1,0 +1,69 @@
+{
+  "name": "unused-package-detector",
+  "version": "2.0.0",
+  "description": "Cross-language CLI + dashboard tool to detect, visualize, and safely remove unused dependencies",
+  "main": "./backend/server.js",
+  "type": "module",
+  "bin": {
+    "unused-packages": "./cli/index.js"
+  },
+  "scripts": {
+    "start": "node backend/server.js",
+    "cli": "node cli/index.js",
+    "frontend": "npm start --prefix frontend",
+    "dev": "concurrently \"npm run start\" \"npm run frontend\"",
+    "test": "jest",
+    "build": "cd frontend && npm run build",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "dependency",
+    "detection",
+    "unused",
+    "security",
+    "optimization",
+    "cli",
+    "dashboard",
+    "nodejs",
+    "python",
+    "java",
+    "maven",
+    "gradle",
+    "package-manager",
+    "cleanup",
+    "dependencies",
+    "vulnerability",
+    "audit"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sumit-walker/unused-package-detector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sumit-walker/unused-package-detector/issues"
+  },
+  "homepage": "https://github.com/sumit-walker/unused-package-detector#readme",
+  "files": [
+    "cli/",
+    "backend/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.2",
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "glob": "^11.0.3",
+    "inquirer": "^12.11.1",
+    "open": "^11.0.0",
+    "xml2js": "^0.6.2"
+  }
+}

@@ -1,0 +1,59 @@
+# Development files
+node_modules/
+frontend/
+example-project/
+tests/
+testsprite_tests/
+*.test.js
+*.spec.js
+
+# Config files
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+
+# Documentation (keep README and LICENSE)
+*.md
+!README.md
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build artifacts
+dist/
+build/
+coverage/
+.nyc_output/
+
+# Misc
+package-lock.json
+test-servers.bat
+verify-project.js
+jest.config.js
+
+# Development scripts
+CONTRIBUTING.md
+FEATURES.md
+HOW_TO_*.md
+TESTING_*.md
+VERIFICATION_*.md
+AUTO_REMOVE_*.md
+USE_THIS_PATH.md
+QUICKSTART.md
+START_HERE.md
+PROJECT_STRUCTURE.md
+PROJECT_SUMMARY.md
+QUICK_START_PATH.md
+QUICK_VERIFY.md
+SETUP.md
+USAGE.md
+
