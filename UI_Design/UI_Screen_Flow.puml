@@ -1,0 +1,64 @@
+' 5.13 USER INTERFACE DESIGN - Screen Flow Diagram
+
+@startuml UIScreenFlow
+!define STYLE_SCREEN_START circle
+!define STYLE_SCREEN_NORMAL rectangle
+!define STYLE_SCREEN_DECISION diamond
+!define STYLE_SCREEN_END circle
+
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #ffffff
+skinparam arrowColor #1a73e8
+
+' Screens
+state "Home Page" as Home {
+  Home : Upload Project Button
+  Home : Quick Tips
+  Home : Navigation Links
+}
+
+state "Dashboard" as Dashboard {
+  Dashboard : Pie Chart (Used vs Unused)
+  Dashboard : Summary Metrics
+  Dashboard : Dependencies Table
+  Dashboard : Severity Indicators
+}
+
+state "Security View" as Security {
+  Security : Vulnerability List
+  Security : Risk Score
+  Security : CVE Details
+}
+
+state "Removal Panel" as Removal {
+  Removal : Package Selection (Checkboxes)
+  Removal : Dependency Analysis
+  Removal : Preview Changes
+  Removal : Output Logs
+}
+
+state "Report Page" as Report {
+  Report : Executive Summary
+  Report : Detailed Findings
+  Report : Storage Impact Analysis
+  Report : Download Options
+}
+
+' Navigation Flows
+Home --> Dashboard : Upload Project\nor Continue
+Dashboard --> Security : View Security\nDetails
+Dashboard --> Removal : Remove\nPackages
+Dashboard --> Report : Generate\nReport
+Security --> Removal : Remediate\n(Pre-select)
+Security --> Dashboard : Back
+Removal --> Dashboard : Cancel
+Removal --> Report : View Report\n(Post-removal)
+Report --> Dashboard : New Analysis
+Report --> Removal : Remove More
+Report --> Home : Start Over
+
+' Initial and Final states
+[*] --> Home
+Report --> [*]
+
+@enduml
