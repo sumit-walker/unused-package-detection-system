@@ -1,0 +1,10 @@
+{
+  "name": "example-project",
+  "version": "1.0.0",
+  "description": "Example project for testing unused package detection",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

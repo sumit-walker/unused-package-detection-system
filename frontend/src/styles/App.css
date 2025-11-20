@@ -1,0 +1,113 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Light Mode (Default) */
+body.light-mode {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark Mode */
+body.dark-mode {
+  font-family: 'Roboto', sans-serif;
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.App {
+  min-height: 100vh;
+}
+
+/* Global Button Styles */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #1a73e8;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #1557b0;
+}
+
+.btn-secondary {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.btn-secondary:hover {
+  background-color: #efefef;
+}
+
+body.dark-mode .btn-secondary {
+  background-color: #333;
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+body.dark-mode .btn-secondary:hover {
+  background-color: #444;
+}
+
+.btn-download {
+  background-color: #0b7a3b;
+  color: white;
+  margin: 5px;
+}
+
+.btn-download:hover {
+  background-color: #0a6230;
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status-badge.used {
+  background-color: #e8f5e9;
+  color: #0b7a3b;
+}
+
+.status-badge.unused {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
+
+body.dark-mode .status-badge.used {
+  background-color: #1b5e20;
+  color: #81c784;
+}
+
+body.dark-mode .status-badge.unused {
+  background-color: #b71c1c;
+  color: #ef9a9a;
+}
+
+.severity-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 3px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
