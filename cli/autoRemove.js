@@ -5,8 +5,15 @@ import chalk from 'chalk';
 
 const execPromise = promisify(exec);
 
-async function autoRemove(results, language = 'nodejs') {
-  const unusedPackages = results.dependencies.unused.map(dep => dep.name);
+const NODE_MANAGERS = new Set(['npm', 'yarn', 'pnpm']);
+
+/**
+ * @param {object} results Analyzer output (expects projectPath, dependencies.unused)
+ * @param {string} language
+ * @param {{ packageManager?: string }} [options] If packageManager is set (npm|yarn|pnpm), skips the prompt for Node.
+ */
+async function autoRemove(results, language = 'nodejs', options = {}) {
+  const unusedPackages = results.dependencies.unused.map((dep) => dep.name);
   
   console.log(chalk.blue('\n🗑️  Removing unused packages...\n'));
 
@@ -14,14 +21,21 @@ async function autoRemove(results, language = 'nodejs') {
     let command;
     
     if (language === 'nodejs') {
-      const { packageManager } = await inquirer.prompt([
-        {
-          type: 'list',
-          name: 'packageManager',
-          message: 'Select package manager:',
-          choices: ['npm', 'yarn', 'pnpm']
-        }
-      ]);
+      let packageManager = options.packageManager?.toLowerCase?.();
+      if (packageManager && !NODE_MANAGERS.has(packageManager)) {
+        throw new Error(`Invalid package manager "${options.packageManager}". Use npm, yarn, or pnpm.`);
+      }
+      if (!packageManager) {
+        const answer = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'packageManager',
+            message: 'Select package manager:',
+            choices: ['npm', 'yarn', 'pnpm'],
+          },
+        ]);
+        packageManager = answer.packageManager;
+      }
 
       switch (packageManager) {
         case 'npm':
@@ -33,6 +47,8 @@ async function autoRemove(results, language = 'nodejs') {
         case 'pnpm':
           command = `pnpm remove ${unusedPackages.join(' ')}`;
           break;
+        default:
+          throw new Error('Could not determine package manager.');
       }
     } else if (language === 'python') {
       command = `pip uninstall -y ${unusedPackages.join(' ')}`;
@@ -50,7 +66,8 @@ async function autoRemove(results, language = 'nodejs') {
       console.log(chalk.gray(`Running: ${command}\n`));
       
       const { stdout, stderr } = await execPromise(command, {
-        cwd: results.projectPath
+        cwd: results.projectPath,
+        maxBuffer: 10 * 1024 * 1024,
       });
 
       if (stdout) console.log(chalk.green(stdout));

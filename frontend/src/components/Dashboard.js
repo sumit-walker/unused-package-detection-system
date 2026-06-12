@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import VulnerabilityList from './VulnerabilityList';
+import AiInsights from './AiInsights';
 import axios from 'axios';
+import { apiUrl } from '../config';
 
 const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b'];
 
@@ -10,6 +12,8 @@ function Dashboard({ results, onRescan }) {
   const [removing, setRemoving] = useState(false);
   const [removeStatus, setRemoveStatus] = useState(null);
   const [rescanning, setRescanning] = useState(false);
+  const [packageManager, setPackageManager] = useState('npm');
+  const aiInsightsRef = useRef(null);
 
   const handleAutoRemove = () => {
     if (results.dependencies.unused.length === 0) {
@@ -24,9 +28,11 @@ function Dashboard({ results, onRescan }) {
     setRemoveStatus({ type: 'info', message: 'Removing unused packages...' });
 
     try {
-      const response = await axios.post('http://localhost:3001/api/analysis/auto-remove', {
+      const response = await axios.post(apiUrl('/api/analysis/auto-remove'), {
         projectPath: results.projectPath,
-        unusedPackages: results.dependencies.unused.map(dep => dep.name)
+        unusedPackages: results.dependencies.unused.map((dep) => dep.name),
+        language: results.language,
+        ...(results.language === 'nodejs' ? { packageManager } : {}),
       });
 
       if (response.data.success) {
@@ -206,6 +212,8 @@ function Dashboard({ results, onRescan }) {
         </div>
       </div>
 
+      <AiInsights ref={aiInsightsRef} results={results} />
+
       {/* Storage Impact */}
       {results.dependencies.unused.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
@@ -267,6 +275,20 @@ function Dashboard({ results, onRescan }) {
             <p className="text-gray-600 mb-4">
               Are you sure you want to remove {results.dependencies.unused.length} unused package(s)?
             </p>
+            {results.language === 'nodejs' && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Package manager</label>
+                <select
+                  value={packageManager}
+                  onChange={(e) => setPackageManager(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  <option value="npm">npm</option>
+                  <option value="yarn">yarn</option>
+                  <option value="pnpm">pnpm</option>
+                </select>
+              </div>
+            )}
             <div className="bg-gray-50 rounded-lg p-4 mb-6 max-h-48 overflow-y-auto">
               <ul className="space-y-1">
                 {results.dependencies.unused.slice(0, 10).map((dep, idx) => (
@@ -315,6 +337,9 @@ function Dashboard({ results, onRescan }) {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Type
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    AI risk
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -330,6 +355,15 @@ function Dashboard({ results, onRescan }) {
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                         {dep.type}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        type="button"
+                        onClick={() => aiInsightsRef.current?.predictRiskForPackage(dep.name)}
+                        className="text-indigo-600 hover:text-indigo-800 font-medium"
+                      >
+                        Predict risk
+                      </button>
                     </td>
                   </tr>
                 ))}
