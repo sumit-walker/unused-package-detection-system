@@ -1,348 +1,310 @@
 # Unused Package Detection System
 
-A cross-language CLI + dashboard tool that analyzes project folders to detect, visualize, and safely remove unused dependencies. Supports Node.js, Python, and Java projects. Helps developers reduce dependency bloat, save storage, improve build times, and enhance security.
+A cross-language CLI + dashboard tool that analyzes project folders to detect, visualize, and safely remove unused dependencies. Supports Node.js, Python, and Java projects. Helps developers reduce dependency bloat, save storage, improve build times, and enhance security. Optional **Google Gemini** integration adds AI risk scoring and dependency alternatives in the API and dashboard.
 
 
 
-## 📦 Install as npm Package
+## Install as npm Package
 
-### Global Installation (Recommended for CLI)
+### Global installation (recommended for CLI)
 
 ```bash
 npm install -g unused-package-detector
 ```
 
-After installation, use the CLI command from anywhere:
-
 ```bash
-# Scan any project - just provide the path!
 unused-packages scan /path/to/your/project
-
-# Or scan current directory
-cd /path/to/your/project
-unused-packages scan .
+cd /path/to/your/project && unused-packages scan .
 ```
 
-> **💡 Important:** The system analyzes **any project path you provide**, not just a specific example project. You can scan any Node.js, Python, or Java project on your system!
+The tool analyzes **whatever project path you pass** (Node.js, Python, or Java).
 
-### Local Installation
+### Local installation
 
 ```bash
 npm install unused-package-detector
 ```
 
-Then use via npx:
-
 ```bash
 npx unused-packages scan /path/to/project
 ```
 
-Or add to your project's scripts in `package.json`:
+Add scripts in your app’s `package.json`:
 
 ```json
 {
   "scripts": {
-    "check-unused": "unused-packages scan ."
+    "check-unused": "unused-packages scan .",
+    "prune-unused": "unused-packages remove -y --pm npm ."
   }
 }
 ```
 
-## 🎯 Features
+## Features
 
-- **Multi-language Support**: Detect unused packages in Node.js, Python, and Java projects
-- **CLI Interface**: Command-line tool for quick analysis and cleanup
-- **Web Dashboard**: Beautiful React-based visualization with charts and insights
-- **Security Scanning**: Integration with npm audit, pip-audit, and OWASP Dependency Check
-- **Storage Impact**: Quantify storage savings from removing unused packages
-- **Safe Auto-removal**: Remove unused packages with confirmation prompts
-- **Detailed Reports**: Comprehensive JSON reports with all findings
-- **Auto-detection**: Automatically detects project language from dependency files
+- **Multi-language support**: Node.js, Python, and Java
+- **CLI**: Scan, JSON output, and **non-interactive removal** (`remove -y --pm`)
+- **Web dashboard**: React UI with charts, unused list, **npm/yarn/pnpm** removal, and **Gemini AI** panel
+- **Security**: npm audit, pip-audit / safety, OWASP-style flows where configured
+- **Storage impact**: Estimated savings from removing unused packages
+- **AI (optional)**: Risk prediction and smart alternatives via Gemini (`/api/ai/*`)
+- **CI**: GitHub Actions workflow + `CI=true` guards so prompts never hang in automation
+- **Auto-detection**: Language from `package.json`, `requirements.txt`, `pom.xml`, etc.
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 unused-package-detection-system/
-├── backend/              # Express.js API server
-│   ├── routes/          # API endpoints
-│   ├── controllers/     # Request handlers
-│   ├── services/        # Core business logic
-│   ├── parsers/         # Dependency file parsers
-│   └── analyzers/       # Code analysis modules
-├── frontend/            # React dashboard
+├── backend/                 # Express API
+│   ├── routes/              # analysis.js, ai.js
+│   ├── controllers/       # analysisController, aiController
+│   ├── services/            # analyzer, security, geminiRiskAnalyzer, geminiRecommendationService, …
+│   ├── parsers/             # nodejs, python, java
+│   ├── analyzers/
+│   └── .env                 # local secrets (gitignored); see Environment
+├── frontend/                # React (CRA-style) dashboard
 │   └── src/
-│       └── components/  # React components
-├── cli/                 # Command-line interface
-├── tests/               # Test suites
-└── example-project/     # Demo project
+│       ├── components/      # Scanner, Dashboard, AiInsights, …
+│       └── config.js        # API base URL
+├── cli/                     # Commander CLI (scan, remove)
+├── .github/workflows/       # e.g. remove-unused-dependencies.yml
+└── example-project/
 ```
 
-## 🚀 Quick Start
+## Quick start
 
-### Using as npm Package (Recommended)
+### As a global CLI
 
-1. **Install globally:**
 ```bash
 npm install -g unused-package-detector
-```
-
-2. **Scan a project:**
-```bash
 unused-packages scan /path/to/your/project
 ```
 
-3. **With options:**
+### Development (clone this repo)
+
 ```bash
-# Auto-detect language
-unused-packages scan /path/to/project
-
-# Specify language
-unused-packages scan /path/to/project --language python
-
-# JSON output
-unused-packages scan /path/to/project --json
-
-# Auto-remove unused packages
-unused-packages scan /path/to/project --remove-unused
-```
-
-### Development Setup
-
-For contributing or running the dashboard locally:
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/unused-package-detector.git
+git clone https://github.com/sumit-walker/unused-package-detector.git
 cd unused-package-detector
-```
-
-2. Install dependencies:
-```bash
 npm install
 cd frontend && npm install && cd ..
 ```
 
-3. (Optional) Copy environment template:
-```bash
-cp env.example .env
-```
+**Backend**
 
-### Running the Application
-
-#### Backend Server
 ```bash
 npm start
-# or with hot-reload
-npm run dev
 ```
 
-Server will run on `http://localhost:3001`
+Runs at `http://localhost:3001` (override with `PORT`).
 
-#### Frontend Dashboard
+**Frontend**
+
 ```bash
 npm run frontend
 ```
 
-Dashboard will run on `http://localhost:3000`
+Runs at `http://localhost:3000`. Set `REACT_APP_API_BASE_URL` in `frontend/.env` if the API is not on port 3001.
 
-#### CLI Tool (when installed globally)
+**CLI from repo root**
+
 ```bash
-unused-packages scan <project-path>
+npm run cli -- scan .
+npm run cli -- remove --help
 ```
 
-#### CLI Tool (local development)
-```bash
-npm run cli scan <project-path>
-```
+## CLI usage
 
-## 📖 Usage Guide
+### Scan
 
-### CLI Usage
-
-**Basic scan (auto-detect language):**
 ```bash
 unused-packages scan /path/to/project
+unused-packages scan . --language python
+unused-packages scan . --json
 ```
 
-**Specify language:**
-```bash
-unused-packages scan /path/to/project --language nodejs
-unused-packages scan /path/to/project --language python
-unused-packages scan /path/to/project --language java
-```
+**Remove during scan** (interactive prompts; **do not use in CI** without TTY):
 
-**JSON output:**
-```bash
-unused-packages scan /path/to/project --json
-```
-
-**Auto-remove unused packages:**
 ```bash
 unused-packages scan /path/to/project --remove-unused
+unused-packages scan /path/to/project --remove-unused --pm pnpm
 ```
 
-**Open dashboard:**
+### Remove (dedicated command)
+
+Scans then uninstalls all unused dependencies for that project.
+
 ```bash
-unused-packages scan /path/to/project --open-dashboard
+# Interactive (confirm + package manager for Node)
+unused-packages remove /path/to/project
+
+# CI / automation: no prompts (Node defaults to npm if --pm omitted)
+unused-packages remove -y --pm npm /path/to/project
+unused-packages remove -y --pm yarn .
+unused-packages remove -y -j .
 ```
 
-### API Usage
+From this repository:
 
-**Scan a project:**
 ```bash
-curl -X POST http://localhost:3001/api/analysis/scan \
-  -H "Content-Type: application/json" \
-  -d '{"projectPath": "/path/to/project", "language": "nodejs"}'
+npm run remove-unused -- --help
+npm run ci:remove-unused
 ```
 
-**Get all reports:**
-```bash
-curl http://localhost:3001/api/reports
+If `CI=true` and `--yes` is missing, `remove` exits with an error message instead of hanging on prompts. The same applies to `scan --remove-unused` in CI (use `remove -y` instead).
+
+## REST API
+
+Base URL: `http://localhost:3001` (or your deployed host).
+
+### Analysis
+
+**POST `/api/analysis/scan`**
+
+```json
+{ "projectPath": "/absolute/path/to/project", "language": "nodejs" }
 ```
 
-### Web Dashboard
+`language` may be omitted for auto-detect. Response: `{ "success": true, "data": { ... } }`.
 
-1. Start both backend and frontend servers
-2. Open `http://localhost:3000` in your browser
-3. Enter project path and click "Start Scan"
-4. View results in the dashboard with interactive charts
+**POST `/api/analysis/auto-remove`**
 
-## 📊 Output Format
-
-### CLI Output
-
-```
-📊 Analysis Results
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Summary:
-  Total Dependencies: 25
-  ✅ Used: 18
-  ❌ Unused: 7
-  ⚠️  Missing: 0
-  🔒 Vulnerabilities: 3
-
-❌ Unused Packages:
-  • lodash (^4.17.21)
-  • moment (^2.29.4)
-  ...
-
-💾 Storage Impact:
-  Estimated Savings: 35.00 MB (0.034 GB)
-  Packages to Remove: 7
-```
-
-### JSON Report
+Removes listed packages in `projectPath`.
 
 ```json
 {
   "projectPath": "/path/to/project",
-  "summary": {
-    "totalDependencies": 25,
-    "usedCount": 18,
-    "unusedCount": 7,
-    "missingCount": 0,
-    "vulnerabilityCount": 3
-  },
-  "dependencies": {
-    "used": [...],
-    "unused": [
-      {
-        "name": "lodash",
-        "version": "^4.17.21",
-        "type": "dependency"
-      }
-    ],
-    "missing": []
-  },
-  "security": {
-    "vulnerabilities": [
-      {
-        "package": "express",
-        "severity": "moderate",
-        "title": "Path Traversal vulnerability"
-      }
-    ],
-    "criticalCount": 0,
-    "highCount": 1
-  },
-  "impact": {
-    "storageSavedMB": "35.00",
-    "storageSavedGB": "0.034",
-    "packagesToRemove": 7
-  }
+  "unusedPackages": ["lodash", "moment"],
+  "language": "nodejs",
+  "packageManager": "npm"
 }
 ```
 
-## 🧪 Testing
+- **Node.js**: `packageManager` is `npm`, `yarn`, or `pnpm` (default `npm`).
+- **Python**: `language` `python` — runs `pip uninstall -y` (omit `packageManager`).
+- **Java**: returns an error; edit Maven/Gradle files manually.
 
-Run the test suite:
+**GET `/api/health`**
+
+### AI (Gemini)
+
+Requires `GEMINI_API_KEY` or `GOOGLE_API_KEY` in `backend/.env`. Optional: `GEMINI_MODEL` (default model id is kept in sync with current Google AI models, e.g. `gemini-2.5-flash`).
+
+**POST `/api/ai/predict-risk`**
+
+```json
+{
+  "package": "lodash",
+  "vulnerabilities": 0,
+  "lastUpdated": null,
+  "downloads": 0,
+  "ageInDays": 0
+}
+```
+
+**POST `/api/ai/recommend`**
+
+```json
+{ "package": "moment" }
+```
+
+Responses may include `usedFallback` / `fallbackReason` when the model is unavailable or returns invalid data.
+
+## Web dashboard
+
+1. Start backend (`npm start`) and frontend (`npm run frontend`).
+2. Open `http://localhost:3000`.
+3. Enter an **absolute** project path and run **Start Scan**.
+4. Open the **Dashboard** tab for charts, unused list, **Remove unused packages** (choose package manager for Node), and **AI insights (Gemini)**.
+
+## CI: GitHub Actions
+
+Workflow: **`.github/workflows/remove-unused-dependencies.yml`**
+
+- **Actions → Remove unused dependencies → Run workflow**
+- Inputs: path to the folder that contains `package.json`, and `npm` / `yarn` / `pnpm`.
+- Installs dependencies, then runs: `node cli/index.js remove -y --pm <manager> <path>`.
+
+The workflow does not commit changes; open a PR with updated `package.json` and lockfiles after review.
+
+## Environment variables
+
+### Backend (`backend/.env`, gitignored)
+
+| Variable | Purpose |
+|----------|---------|
+| `PORT` | HTTP port (default `3001`) |
+| `GEMINI_API_KEY` or `GOOGLE_API_KEY` | Gemini API for `/api/ai/*` |
+| `GEMINI_MODEL` | Override model id (optional) |
+
+The server loads `backend/.env` first, then a `.env` in the current working directory.
+
+### Frontend (`frontend/.env`)
+
+| Variable | Purpose |
+|----------|---------|
+| `REACT_APP_API_BASE_URL` | Backend origin, e.g. `http://localhost:3001` (no trailing slash) |
+
+Rebuild or restart the dev server after changing frontend env vars.
+
+### Optional / tooling
+
+- `SNYK_API_KEY`, npm audit behavior, etc., may be used by scanners where integrated.
+
+## Output shape (summary)
+
+Scan `data` includes `language`, `projectPath`, `summary`, `dependencies` (`used`, `unused`, `missing`), `security.vulnerabilities`, `outdated`, and `impact` (storage estimates). Use `--json` on the CLI for the full object.
+
+## Testing
+
 ```bash
 npm test
 ```
 
-## 🔧 Configuration
+## Language support
 
-### Environment Variables
+### Node.js
 
-- `PORT`: Server port (default: 3001)
-- `SNYK_API_KEY`: Snyk API key for security scanning (optional)
-- `NPM_AUDIT_ENABLED`: Enable npm audit scanning (default: true)
+- `package.json` dependencies / devDependencies  
+- Import detection in `.js`, `.jsx`, `.ts`, `.tsx`  
+- npm audit; removal via npm, yarn, or pnpm  
 
-## 🌟 Features by Language
+### Python
 
-### Node.js ✅
-- Parse `package.json` dependencies and devDependencies
-- Detect ES6 and CommonJS imports
-- npm audit integration
-- Support for TypeScript files (.ts, .tsx)
-- Support for JavaScript files (.js, .jsx)
+- `requirements.txt`, `setup.py`, `pyproject.toml`  
+- pip-audit / safety when available  
+- Removal: `pip uninstall -y` (requirements file may need manual edits)  
 
-### Python ✅
-- Parse `requirements.txt`, `setup.py`, and `pyproject.toml`
-- Detect Python imports from `.py` files
-- pip-audit and safety integration
-- Automatic virtual environment detection
+### Java
 
-### Java ✅
-- Parse Maven `pom.xml` files
-- Parse Gradle `build.gradle` and `build.gradle.kts` files
-- Detect Java imports from `.java` files
-- OWASP Dependency Check integration
-- Support for Maven and Gradle projects
+- Maven / Gradle parsing  
+- Removal is manual (pom / Gradle edits)  
 
-<!-- ## 🤝 Contributing
+## Roadmap (high level)
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+- [x] Node.js, Python, Java detection  
+- [x] CLI + dashboard  
+- [x] Security scanning hooks  
+- [x] AI-powered risk + recommendations (Gemini)  
+- [x] CI-friendly removal + GitHub Actions workflow  
+- [ ] Docker image / one-click deploy templates  
+- [ ] Deeper enterprise / policy features  
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request -->
+## Security notes
 
-## 📝 Roadmap
+- Prefer **environment variables** for API keys; never commit `.env`.
+- Review unused lists before removal in production.
+- Rotate any API key that was ever committed or pasted into a public channel.
 
-- [x] Node.js detection module
-- [x] CLI interface
-- [x] React dashboard
-- [x] Security scanning integration
-- [x] Python support
-- [x] Java support
-- [ ] CI/CD integration
-- [ ] AI-powered optimization suggestions
-- [ ] Enterprise features
-- [ ] Docker support
-- [ ] GitHub Actions integration
+## Acknowledgments
 
-## 🔒 Security
+- Express, React, Recharts, Tailwind-oriented UI patterns  
+- Google Gemini API for optional AI features  
 
 The system uses industry-standard security practices:
 - npm audit for Node.js projects
 - Secure dependency parsing
 - Validation of all inputs
 - Safe package removal with confirmations
-
-
 
 ## 🙏 Acknowledgments
 
@@ -351,11 +313,6 @@ The system uses industry-standard security practices:
 - Security scanning via npm audit
 - Styled with Tailwind CSS
 
-<!-- ## 📞 Support
+## License
 
-For issues, questions, or feature requests, please open an issue on GitHub.
-
----
-
-Made with ❤️ for developers who care about clean dependencies -->
-
+MIT — see the `LICENSE` file in the repository.

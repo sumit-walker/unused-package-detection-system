@@ -30,9 +30,12 @@ const analyzeProject = async (req, res) => {
   }
 };
 
+const NODE_MANAGERS = new Set(['npm', 'yarn', 'pnpm']);
+
 const autoRemovePackages = async (req, res) => {
   try {
-    const { projectPath, unusedPackages } = req.body;
+    const { projectPath, unusedPackages, packageManager: pmRaw, language: langRaw } = req.body;
+    const language = String(langRaw || 'nodejs').toLowerCase();
 
     if (!projectPath || !unusedPackages || !Array.isArray(unusedPackages)) {
       return res.status(400).json({ 
@@ -50,7 +53,32 @@ const autoRemovePackages = async (req, res) => {
     }
 
     const resolvedPath = path.resolve(projectPath);
-    const command = `npm uninstall ${unusedPackages.join(' ')}`;
+    let command;
+
+    if (language === 'nodejs') {
+      const pm = String(pmRaw || 'npm').toLowerCase();
+      if (!NODE_MANAGERS.has(pm)) {
+        return res.status(400).json({
+          success: false,
+          error: 'packageManager must be one of: npm, yarn, pnpm',
+        });
+      }
+      if (pm === 'npm') command = `npm uninstall ${unusedPackages.join(' ')}`;
+      else if (pm === 'yarn') command = `yarn remove ${unusedPackages.join(' ')}`;
+      else command = `pnpm remove ${unusedPackages.join(' ')}`;
+    } else if (language === 'python') {
+      command = `pip uninstall -y ${unusedPackages.join(' ')}`;
+    } else if (language === 'java') {
+      return res.status(400).json({
+        success: false,
+        error: 'Automatic removal is not supported for Java; edit pom.xml or build.gradle manually.',
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: `Unsupported language: ${language}`,
+      });
+    }
 
     console.log(`Running: ${command} in ${resolvedPath}`);
 

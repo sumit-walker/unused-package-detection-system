@@ -1,103 +1,84 @@
-# Unused Package Detection System - Frontend
+# Unused Package Detection System — Frontend
 
-## Setup
+React dashboard for the Unused Package Detection System. It talks to the **Express backend** (default `http://localhost:3001`) for scans, auto-removal, and optional Gemini-powered AI panels.
 
-### Prerequisites
-- Node.js 14+
-- npm or yarn
+## Prerequisites
 
-### Installation
+- Node.js 18+ recommended (aligned with backend `fetch` usage)
+- npm, yarn, or pnpm
+
+## Install
 
 ```bash
+cd frontend
 npm install
 ```
 
-### Development
+## Environment variables
+
+Create `frontend/.env` (see `.gitignore` at repo root — do not commit secrets):
+
+```bash
+# Backend origin (no trailing slash). Must match where the API runs.
+REACT_APP_API_BASE_URL=http://localhost:3001
+
+# Optional legacy / other tooling
+REACT_APP_ENV=development
+```
+
+After changing `.env`, restart `npm start`.
+
+`src/config.js` reads `REACT_APP_API_BASE_URL` and builds URLs such as `/api/analysis/scan` and `/api/ai/predict-risk`.
+
+## Development
 
 ```bash
 npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view in the browser.
+Open [http://localhost:3000](http://localhost:3000). Ensure the backend is running (`npm start` from the **repository root** runs `backend/server.js` on port 3001 by default).
 
-### Build for Production
+## Production build
 
 ```bash
 npm run build
 ```
 
-## Deployment to Vercel / Firebase Hosting
+Output is under `frontend/build/`. Serve static files behind HTTPS and point `REACT_APP_API_BASE_URL` at your production API (or inject at build time for CRA).
 
-### Vercel (Recommended)
-1. Connect GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Auto-deploy on push to main branch
-
-### Firebase Hosting
-```bash
-firebase login
-firebase init hosting
-npm run build
-firebase deploy
-```
-
-### GitHub Pages
-```bash
-npm install --save-dev gh-pages
-# Update package.json with "homepage": "https://username.github.io/repo"
-npm run build
-npm run deploy
-```
-
-## Project Structure
+## Project structure (actual)
 
 ```
 frontend/
-├── src/
-│   ├── components/
-│   │   └── Navbar.jsx
-│   ├── pages/
-│   │   ├── HomePage.jsx
-│   │   ├── Dashboard.jsx
-│   │   ├── SecurityView.jsx
-│   │   ├── RemovalPanel.jsx
-│   │   └── ReportPage.jsx
-│   ├── styles/
-│   │   ├── App.css
-│   │   ├── Navbar.css
-│   │   ├── HomePage.css
-│   │   ├── Dashboard.css
-│   │   ├── SecurityView.css
-│   │   ├── RemovalPanel.css
-│   │   └── ReportPage.css
-│   ├── App.jsx
-│   └── index.jsx
 ├── public/
-├── package.json
-└── README.md
-```
-
-## Environment Variables
-
-Create a `.env` file in the root directory:
-
-```
-REACT_APP_API_URL=http://your-backend-url/api
-REACT_APP_ENV=production
+├── src/
+│   ├── App.js              # Tabs: Scan ↔ Dashboard
+│   ├── config.js           # API_BASE / apiUrl()
+│   ├── components/
+│   │   ├── Scanner.js      # Project path + language → POST /api/analysis/scan
+│   │   ├── Dashboard.js  # Charts, remove unused, AI insights
+│   │   ├── AiInsights.js # Gemini: risk + alternative (uses scan results)
+│   │   ├── VulnerabilityList.js
+│   │   └── Header.js
+│   ├── hooks/
+│   └── index.js
+├── tailwind.config.js
+├── postcss.config.js
+└── package.json
 ```
 
 ## Features
 
-- ✅ Home page with project upload
-- ✅ Dashboard with package overview
-- ✅ Security view with vulnerabilities
-- ✅ Removal panel with logs
-- ✅ Report generation and download
+- **Scan**: Absolute project path and optional language; results drive the dashboard.
+- **Dashboard**: Summary cards, usage charts, vulnerabilities, unused table, storage impact.
+- **Remove unused**: Confirmation modal; for **Node.js** projects, choose **npm**, **yarn**, or **pnpm** before confirming. Calls `POST /api/analysis/auto-remove` with `language` and `packageManager`.
+- **AI insights (Gemini)**: After a scan, pick a package (or type a name) and call **AI risk prediction** / **AI smart alternative**. Requires backend `GEMINI_API_KEY` and working model id; otherwise the UI still loads and may show fallback messaging from the API.
 
-## TODO
+## Deployment notes
 
-- [ ] Connect to actual backend API
-- [ ] Add dark/light theme toggle
-- [ ] Implement real-time logs
-- [ ] Add data export functionality
-- [ ] Enhance mobile responsiveness
+- **Vercel / Netlify / static host**: Build with the correct `REACT_APP_API_BASE_URL` for your API; enable CORS on the backend for your frontend origin.
+- **Same-origin**: If the API is reverse-proxied under the same host as `/api`, set `REACT_APP_API_BASE_URL` to that origin (or empty string + proxy — CRA proxy in `package.json` is optional).
+
+## Related docs
+
+Repository root `README.md` describes the full stack, CLI, CI workflow, and backend env vars.

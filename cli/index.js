@@ -20,6 +20,7 @@ program
   .option('-l, --language <lang>', 'Project language (nodejs, python, java). Auto-detected if not specified')
   .option('-j, --json', 'Output results as JSON')
   .option('-r, --remove-unused', 'Remove unused packages automatically')
+  .option('--pm <manager>', 'With --remove-unused: npm, yarn, or pnpm (skips prompt)')
   .option('-o, --open-dashboard', 'Open results in web dashboard')
   .action(async (projectPath, options) => {
     try {
@@ -38,11 +39,103 @@ program
       }
 
       if (options.removeUnused) {
-        await handleAutoRemove(results);
+        if (String(process.env.CI || '').toLowerCase() === 'true') {
+          console.error(
+            chalk.red(
+              '\nCI detected: `scan --remove-unused` needs a TTY for prompts. Use instead:\n  node cli/index.js remove -y --pm npm <project-path>\n',
+            ),
+          );
+          process.exit(1);
+        }
+        await handleAutoRemove(results, { packageManager: options.pm });
       }
 
       if (options.openDashboard) {
         await openDashboard(results);
+      }
+    } catch (error) {
+      console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('remove')
+  .description('Scan the project and uninstall unused dependencies (use --yes for no prompts)')
+  .argument('[path]', 'Project path (defaults to current directory)', process.cwd())
+  .option('-l, --language <lang>', 'Project language (nodejs, python, java). Auto-detected if omitted')
+  .option('-y, --yes', 'Skip confirmation (Node.js: uses npm unless --pm is set)')
+  .option('--pm <manager>', 'Package manager for Node.js: npm, yarn, or pnpm')
+  .option('-j, --json', 'Print a short JSON summary after removal')
+  .action(async (projectPath, options) => {
+    try {
+      if (String(process.env.CI || '').toLowerCase() === 'true' && !options.yes) {
+        console.error(
+          chalk.red(
+            '\nCI is non-interactive: pass --yes and --pm (for Node). Example:\n  node cli/index.js remove -y --pm npm .\n',
+          ),
+        );
+        process.exit(1);
+      }
+
+      const fullPath = path.resolve(projectPath);
+      console.log(chalk.blue('\n🔍 Finding unused dependencies...\n'));
+      console.log(chalk.gray(`📁 ${fullPath}\n`));
+
+      const analyzer = new ProjectAnalyzer(options.language || null);
+      const results = await analyzer.analyze(fullPath);
+
+      if (results.dependencies.unused.length === 0) {
+        console.log(chalk.green('✅ No unused packages to remove.\n'));
+        if (options.json) {
+          console.log(JSON.stringify({ removed: 0, packages: [], projectPath: fullPath }, null, 2));
+        }
+        return;
+      }
+
+      const names = results.dependencies.unused.map((d) => d.name);
+
+      if (!options.yes) {
+        printResults(results);
+        const { confirm } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirm',
+            message: chalk.yellow(`Remove ${names.length} unused package(s)?`),
+            default: false,
+          },
+        ]);
+        if (!confirm) {
+          console.log(chalk.blue('\n❌ Removal cancelled.\n'));
+          return;
+        }
+      } else {
+        console.log(
+          chalk.yellow(
+            `Removing ${names.length} unused package(s): ${chalk.white(names.join(', '))}\n`,
+          ),
+        );
+      }
+
+      const pm =
+        options.pm ||
+        (options.yes && results.language === 'nodejs' ? 'npm' : undefined);
+
+      await autoRemove(results, results.language, { packageManager: pm });
+
+      if (options.json) {
+        console.log(
+          JSON.stringify(
+            {
+              removed: names.length,
+              packages: names,
+              projectPath: fullPath,
+              language: results.language,
+            },
+            null,
+            2,
+          ),
+        );
       }
     } catch (error) {
       console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
@@ -128,7 +221,8 @@ function getSeverityColor(severity) {
   return colors[severity.toLowerCase()] || 'gray';
 }
 
-async function handleAutoRemove(results) {
+/** @param {object} results Analyzer output @param {{ packageManager?: string }} [opts] */
+async function handleAutoRemove(results, opts = {}) {
   if (results.dependencies.unused.length === 0) {
     console.log(chalk.green('\n✅ No unused packages to remove!\n'));
     return;
@@ -139,12 +233,12 @@ async function handleAutoRemove(results) {
       type: 'confirm',
       name: 'confirm',
       message: chalk.yellow(`Remove ${results.dependencies.unused.length} unused packages?`),
-      default: false
-    }
+      default: false,
+    },
   ]);
 
   if (confirm) {
-    await autoRemove(results, results.language);
+    await autoRemove(results, results.language, { packageManager: opts.packageManager });
   } else {
     console.log(chalk.blue('\n❌ Removal cancelled.\n'));
   }

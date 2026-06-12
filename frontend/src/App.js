@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { apiUrl } from './config';
 import Dashboard from './components/Dashboard';
 import Scanner from './components/Scanner';
 import Header from './components/Header';
@@ -16,7 +17,7 @@ function App() {
 
   const handleRescan = async (projectPath, language) => {
     try {
-      const response = await axios.post('http://localhost:3001/api/analysis/scan', {
+      const response = await axios.post(apiUrl('/api/analysis/scan'), {
         projectPath,
         language: language || null
       });
