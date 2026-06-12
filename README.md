@@ -344,9 +344,7 @@ The system uses industry-standard security practices:
 - Validation of all inputs
 - Safe package removal with confirmations
 
-<!-- ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details. -->
 
 ## 🙏 Acknowledgments
 
