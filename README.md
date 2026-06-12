@@ -2,9 +2,7 @@
 
 A cross-language CLI + dashboard tool that analyzes project folders to detect, visualize, and safely remove unused dependencies. Supports Node.js, Python, and Java projects. Helps developers reduce dependency bloat, save storage, improve build times, and enhance security.
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue)
 
-![npm](https://img.shields.io/badge/npm-unused--package--detector-red)
 
 ## 📦 Install as npm Package
 
